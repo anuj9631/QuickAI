@@ -2,7 +2,9 @@ import React from 'react'
 
 const RemoveObject = () => {
   return (
-    <div>RemoveObject</div>
+    <div>
+      <h1>RemoveObject</h1>
+    </div>
   )
 }
 
