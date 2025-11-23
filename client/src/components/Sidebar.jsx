@@ -54,5 +54,4 @@ const Sidebar = ({sidebar, setSidebar}) => {
     </div>
   )
 }
-//logout onclick
 export default Sidebar
