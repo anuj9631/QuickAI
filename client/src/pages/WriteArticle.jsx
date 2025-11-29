@@ -41,6 +41,7 @@ const WriteArticle = () => {
            </button>
        </form>
        {/* right col */}
+       {/* git check */}
        <div>
 
        </div>
