@@ -12,8 +12,8 @@ app.use(clerkMiddleware())
 
 app.get('/', (req,res)=>res.send('Server is live!'))
 
- app.use(requireAuth())
- app.use('/api/ai', aiRouter)
+app.use('/api/ai', aiRouter);
+ app.use('/api/ai', requireAuth(), aiRouter)
 
 const PORT = process.env.PORT || 3000;
 
