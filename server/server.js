@@ -11,9 +11,13 @@ app.use(express.json())
 app.use(clerkMiddleware())
 
 app.get('/', (req,res)=>res.send('Server is live!'))
+app.use(requireAuth())
+app.use('/api/ai',aiRouter)
+app.post('/test', (req,res) => {
+  console.log(req.body)
+  res.json({success:true, body:req.body})
+})
 
-app.use('/api/ai', aiRouter);
- app.use('/api/ai', requireAuth(), aiRouter)
 
 const PORT = process.env.PORT || 3000;
 
