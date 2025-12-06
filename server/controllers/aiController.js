@@ -2,6 +2,7 @@ import OpenAI from "openai";
 import sql from "../config/dg.js";
 import { clerkClient } from "@clerk/express";
 import axios from "axios";
+import {v2 as cloudinary} from "cloudinary"
 
 const AI = new OpenAI({
     apiKey: process.env.GEMINI_API_KEY,
@@ -111,22 +112,20 @@ const {data} = await axios.post("https://clipdrop-api.co/text-to-image/v1", form
   responseType: "arraybuffer"
 })
 
-const  base64Image = `data: image/png;base64,${Buffer.from(data, 'binary').toString('base64')}`;
+const base64Image = `data:image/png;base64,${Buffer.from(data).toString("base64")}`;
+
+const {secure_url} = await cloudinary.uploader.upload(base64Image)
+
+await sql` INSERT INTO creations(user_id, prompt, content, type, publish ) VALUES(${userId}, ${prompt}, ${secure_url},'image', ${publish ?? false})`;
 
 
+res.json({success: true, content: secure_url})
 
-await sql` INSERT INTO creations(user_id, prompt, content, type) VALUES(${userId}, ${prompt}, ${content},'blog-article')`;
-
-if(plan !== 'premium'){
-  await clerkClient.users.updateUserMetadata(userId, {
-    privateMetadata :{
-      free_usage: free_usage + 1
-    }
-  })
-}
-res.json({success: true, content})
   } catch (error) {
-    console.log(error.message)
-    res.json({success: false, message: error.message})
-  }
+  console.error("IMAGE GENERATION ERROR:", error); // Full error
+  res.status(500).json({
+    success: false,
+    message: error?.response?.data || error.message || error
+  });
+}
 }
