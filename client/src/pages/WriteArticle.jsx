@@ -1,5 +1,9 @@
-import React, { useState } from 'react'
+import React, { use, useState } from 'react'
 import { Edit, Sparkles } from 'lucide-react'
+import axios from 'axios'
+import { useAuth } from '@clerk/clerk-react';
+
+axios.defaults.baseURL = import.meta.env.VITE_BASE_URL;
 
 const WriteArticle = () => {
 
@@ -12,8 +16,18 @@ const WriteArticle = () => {
   const [selectedLength, setSelectedLength] = useState(articleLength[0])
   const [input, setInput] = useState('')
 
+  const [loading, setLoading]= useState(false)
+  const [content, setContent]= useState('')
+  const {getToken} = useAuth()
+
   const onSubmitHandler = async (e) => {
     e.preventDefault()
+    try {
+      setLoading(true)
+      
+    } catch (error) {
+      
+    }
   }
 
   return (
