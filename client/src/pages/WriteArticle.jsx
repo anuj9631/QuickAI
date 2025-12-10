@@ -140,8 +140,9 @@ const WriteArticle = () => {
           </div>
         ) : (
           <div className="flex-1 overflow-y-auto text-sm text-slate-600 leading-relaxed">
-            <div className="whitespace-pre-wrap">
-              {content}
+            <div className="reset-tw">
+            <Markdown> {content} </Markdown>
+             
             </div>
           </div>
         )}
