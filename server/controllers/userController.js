@@ -1,63 +1,61 @@
-import { use } from "react";
-import sql from "../config/dg.js"
+import sql from "../configs/db.js";
 
 export const getUserCreations = async (req, res) => {
   try {
-    const {userId} = req.auth()
-  
- const creations=    await sql` SELECT * FROM creations WHERE user_id = ${userId} ORDER BY created_at DESC`;
+    const { userId } = req.auth();
 
- res.json({success:true, creations});
+    const creations =
+      await sql`SELECT * FROM creations WHERE user_id = ${userId} ORDER BY created_at DESC`;
 
+    res.json({ success: true, creations });
   } catch (error) {
-    res.json({success:false, message: error.message})
+    res.json({ success: false, message: error.message });
   }
-}
+};
+
 
 export const getPublishedCreations = async (req, res) => {
-  try {
+    try {  
+      const creations =
+        await sql`SELECT * FROM creations WHERE publish= true ORDER BY created_at DESC`;
   
- const creations=    await sql` SELECT * FROM creations WHERE publish = true ORDER BY created_at DESC`;
+      res.json({ success: true, creations });
+    } catch (error) {
+      res.json({ success: false, message: error.message });
+    }
+  };
+  
 
- res.json({success:true, creations});
+  export const toggleLikeCreation = async (req, res) => {
+    try {  
+        const { userId } = req.auth();
+        const {id} = req.body
 
-  } catch (error) {
-    res.json({success:false, message: error.message})
-  }
-}
+        const [creation] = await sql ` SELECT * FROM creations WHERE id = ${id}`
 
-export const toggleLikeCreations = async (req, res) => {
-  try {
-    const {userId} = req.auth()
-    const {id} = req.body
+        if(!creation){
+            return res.json({ success: false, message: "Creation not found"})
+        }
 
-    const [creation] = await sql` SELECT * FROM creations WHERE id=${id}`
-   if (!creation){
-    return res.json({success:false, message: "Creation not found"})
-   }
+        const currentLikes = creation.likes
+        const userIdStr = userId.toString();
+        let updatedLikes;
+        let message;
+        
+        if(currentLikes.includes(userIdStr)){
+            updatedLikes = currentLikes.filter((user)=> user !== userIdStr);
+            message = 'Creation Uliked'
+        } else{
+            updatedLikes = [...currentLikes, userIdStr]
+            message = 'Creation Liked'
+        }
 
-   const currentLikes = creation.like;
-   const userIDStr = userId.toString();
-   let updatedLikes;
-   let message;
+        const formattedArray = `{${updatedLikes.join(',')}}`
 
-   if (currentLikes.includes(userIDStr)){
-       updatedLikes = currentLikes.filter(()=>user !== userIDStr)
-      message = 'creation Unliked'
-   }else{
-    updatedLikes = [...currentLikes, userIDStr]
-    message = 'Creation Liked'
-   }
-
-   const formattedArray = `{${updatedLikes.join(',')}}`
-
-  await sql` UPDATE creations SET likes = ${formattedArray}::text[] WHERE id= ${id}`;
-
- res.json({success:true, message});
-
-  } catch (error) {
-    res.json({success:false, message: error.message})
-  }
-}
-
-
+        await sql `UPDATE creations SET likes = ${formattedArray}::text[] WHERE id = ${id}`
+      res.json({ success: true, message });
+    } catch (error) {
+      res.json({ success: false, message: error.message });
+    }
+  };
+  
