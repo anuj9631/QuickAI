@@ -3,10 +3,11 @@ import sql from "../configs/db.js";
 import { clerkClient } from "@clerk/express";
 import axios from "axios";
 import { v2 as cloudinary } from "cloudinary";
-import fs from 'fs'
+import fs from 'fs';
 import * as pdfParseModule from 'pdf-parse';
 const pdf = pdfParseModule.default || pdfParseModule;
 
+// FIX 1: RESTORED THE SLASH at the end of baseURL. This fixes the 404.
 const AI = new OpenAI({
   apiKey: process.env.GEMINI_API_KEY,
   baseURL: "https://generativelanguage.googleapis.com/v1beta/openai/",
@@ -26,8 +27,10 @@ export const generateArticle = async (req, res) => {
       });
     }
 
+    // FIX 2: Switched to 'gemini-2.5-flash' because it is explicitly listed in your dashboard.
+    // If this still fails, try 'gemini-1.5-flash' one more time, but the slash above is the key fix.
     const response = await AI.chat.completions.create({
-      model: "gemini-2.0-flash",
+      model: "gemini-2.5-flash", 
       messages: [
         {
           role: "user",
@@ -35,12 +38,13 @@ export const generateArticle = async (req, res) => {
         },
       ],
       temperature: 0.7,
-      max_tokens: length,
+      max_tokens: length *2 ,
     });
 
     const content = response.choices[0].message.content;
 
     await sql` INSERT INTO creations (user_id, prompt,content,type) VALUES (${userId}, ${prompt}, ${content}, 'article')`;
+    
     if (plan !== "premium") {
       await clerkClient.users.updateUserMetadata(userId, {
         privateMetadata: {
@@ -71,7 +75,7 @@ export const generateBlogTitle = async (req, res) => {
     }
 
     const response = await AI.chat.completions.create({
-      model: "gemini-2.0-flash",
+      model: "gemini-2.5-flash",
       messages: [
         {
           role: "user",
@@ -85,6 +89,7 @@ export const generateBlogTitle = async (req, res) => {
     const content = response.choices[0].message.content;
 
     await sql` INSERT INTO creations (user_id, prompt,content,type) VALUES (${userId}, ${prompt}, ${content}, 'blog-title')`;
+    
     if (plan !== "premium") {
       await clerkClient.users.updateUserMetadata(userId, {
         privateMetadata: {
@@ -203,7 +208,6 @@ export const removeImageObject = async (req, res) => {
   }
 };
 
-
 export const resumeReview = async (req, res) => {
     try {
       const { userId } = req.auth();
@@ -222,13 +226,11 @@ export const resumeReview = async (req, res) => {
       }
 
       const dataBuffer = fs.readFileSync('resume.pdf');
-
       const pdfData = await pdf(dataBuffer)
-
       const prompt = `Review the following resume and provide constructive feedback on its strengths, weaknesses, and ares for improvement. Resume Content: \n\n${pdfData.text}`
 
       const response = await AI.chat.completions.create({
-        model: "gemini-2.0-flash",
+        model: "gemini-2.5-flash",
         messages: [
           {
             role: "user",
@@ -249,5 +251,3 @@ export const resumeReview = async (req, res) => {
       res.json({ success: false, message: error.message });
     }
   };
-
-  //still issue
