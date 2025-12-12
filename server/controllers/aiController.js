@@ -38,7 +38,7 @@ export const generateArticle = async (req, res) => {
         },
       ],
       temperature: 0.7,
-      max_tokens: length *2 ,
+      max_tokens: length ,
     });
 
     const content = response.choices[0].message.content;
@@ -83,7 +83,7 @@ export const generateBlogTitle = async (req, res) => {
         },
       ],
       temperature: 0.7,
-      max_tokens: 1000,
+      max_tokens: 500,
     });
 
     const content = response.choices[0].message.content;
