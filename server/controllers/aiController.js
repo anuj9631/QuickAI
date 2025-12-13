@@ -4,10 +4,10 @@ import { clerkClient } from "@clerk/express";
 import axios from "axios";
 import { v2 as cloudinary } from "cloudinary";
 import fs from 'fs';
-import * as pdfParseModule from 'pdf-parse';
-const pdf = pdfParseModule.default || pdfParseModule;
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+const pdfParseLib = require("pdf-parse");
 
-// FIX 1: RESTORED THE SLASH at the end of baseURL. This fixes the 404.
 const AI = new OpenAI({
   apiKey: process.env.GEMINI_API_KEY,
   baseURL: "https://generativelanguage.googleapis.com/v1beta/openai/",
@@ -225,7 +225,16 @@ export const resumeReview = async (req, res) => {
         return res.json({success: false, message: "Resume file size exceeds allows size (5MB)."})
       }
 
-      const dataBuffer = fs.readFileSync('resume.pdf');
+      const dataBuffer = fs.readFileSync(resume.path); 
+  
+
+      console.log("DEBUG: pdfParseLib type:", typeof pdfParseLib);
+      console.log("DEBUG: pdfParseLib value:", pdfParseLib);
+      let pdfFunction = pdfParseLib;
+      if (typeof pdfParseLib !== 'function' && pdfParseLib.default) {
+          pdfFunction = pdfParseLib.default;
+      }
+
       const pdfData = await pdf(dataBuffer)
       const prompt = `Review the following resume and provide constructive feedback on its strengths, weaknesses, and ares for improvement. Resume Content: \n\n${pdfData.text}`
 
@@ -245,6 +254,7 @@ export const resumeReview = async (req, res) => {
   
       await sql` INSERT INTO creations (user_id, prompt,content,type) VALUES (${userId}, 'Review the uploaded resume', ${content}, 'resume-review')`;
   
+     
       res.json({ success: true, content });
     } catch (error) {
       console.log(error.message);
