@@ -30,6 +30,10 @@ const Community = () => {
     }
     setLoading(false);
   }
+
+const imageLikeToggle = (id) ={
+
+}
   
   useEffect (()=>{
     if(user){
