@@ -5,46 +5,23 @@ import axios from "axios";
 import { v2 as cloudinary } from "cloudinary";
 import fs from 'fs';
 
-// --- ROBUST PDF IMPORTER ---
-import { createRequire } from "module";
-const require = createRequire(import.meta.url);
-const pdfLib = require("pdf-parse");
 
 const parsePDF = async (buffer) => {
   try {
-    // Attempt 1: Standard Function Call (CommonJS standard)
-    return await pdfLib(buffer);
-  } catch (err) {
-    // If it crashes saying "needs new", we invoke it as a constructor
-    if (err.message && err.message.includes("without 'new'")) {
-       const PDFClass = pdfLib; 
-       return new PDFClass(buffer);
-    }
-    
-    // Attempt 2: Check for .default (ESM Wrapper)
-    if (pdfLib.default) {
-        try {
-            return await pdfLib.default(buffer);
-        } catch (e) {
-            if (e.message && e.message.includes("without 'new'")) {
-                const PDFClass = pdfLib.default;
-                return new PDFClass(buffer);
-            }
-        }
-    }
+    const { createRequire } = await import("module");
+    const require = createRequire(import.meta.url);
 
-    // Attempt 3: If it's the internal PDFParse class (from your earlier logs)
-    if (pdfLib.PDFParse) {
-        // The library stores the result promise in .promise property
-        // We pass an empty options object {} to prevent crashes
-        const parser = new pdfLib.PDFParse(buffer, {});
-        return parser.promise; 
-    }
-    
-    throw err;
+    const pdfLib = require("pdf-parse");
+
+    // standard usage
+    return await pdfLib(buffer);
+
+  } catch (error) {
+    console.error("PDF parse failed:", error.message);
+    throw new Error("PDF parsing is temporarily unavailable");
   }
 };
-// ---------------------------
+
 
 const AI = new OpenAI({
   apiKey: process.env.GEMINI_API_KEY,
