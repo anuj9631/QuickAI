@@ -54,7 +54,7 @@ Create a .env file in the root directory and add your keys:
 Code snippet
 
 # Database (Neon)
-DATABASE_URL="postgresql://user:password@endpoint.neon.tech/dbname?sslmode=require"
+DATABASE_URL=""
 
 # AI Configuration (Gemini)
 VITE_GEMINI_API_KEY="your_gemini_api_key"
